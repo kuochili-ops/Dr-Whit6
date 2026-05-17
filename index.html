@@ -2,37 +2,43 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Dr. Pharmacology - 第一關：臨床解毒試驗</title>
     <style>
         * {
             box-sizing: border-box;
             -webkit-user-select: none;
             user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            /* 解決行動端 100vh 包含瀏覽器底列的問題 */
+            --vh: 1vh;
         }
         body {
             background-color: #0b0f12;
             color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
+            justify-content: space-between;
+            height: calc(var(--vh) * 100);
             overflow: hidden;
-            touch-action: manipulation;
+            touch-action: none; /* 禁用雙擊縮放與瀏覽器下拉刷新 */
+            padding-bottom: env(safe-area-inset-bottom); /* 針對 iPhone 動態島/底條留白 */
         }
         header {
             text-align: center;
-            padding: 8px 5px;
+            padding: 6px 5px;
             width: 100%;
             background: #11161b;
             border-bottom: 1px solid #1f272e;
+            flex-shrink: 0;
         }
-        h1 { margin: 0; font-size: 18px; color: #4da6ff; }
-        .warn-text { font-size: 11px; color: #ffad33; margin-top: 2px; }
+        h1 { margin: 0; font-size: 16px; color: #4da6ff; }
+        .warn-text { font-size: 11px; color: #ffad33; margin-top: 1px; }
 
         #main-layout {
             display: flex;
@@ -40,10 +46,11 @@
             align-items: center;
             width: 100%;
             max-width: 420px;
-            padding: 5px;
             flex-grow: 1;
             justify-content: space-between;
             position: relative;
+            padding: 5px;
+            overflow: hidden;
         }
         #status-bar {
             display: flex;
@@ -52,80 +59,108 @@
             background: #11161b;
             border: 1px solid #1f272e;
             border-radius: 6px;
-            padding: 8px 12px;
-            margin-bottom: 5px;
+            padding: 6px 12px;
             font-size: 13px;
+            flex-shrink: 0;
+            margin-bottom: 4px;
         }
         #stage-container {
             position: relative;
             width: 100%;
+            flex-grow: 1;
             display: flex;
+            align-items: center;
             justify-content: center;
+            overflow: hidden;
+            min-height: 0; /* 關鍵：防止 Flex 子項溢出 */
         }
         canvas {
             background: #06090b;
             border: 2px solid #233541;
             border-radius: 6px;
+            max-height: 100%; /* 確保高度不會塞滿螢幕 */
             max-width: 100%;
-            height: auto;
+            object-fit: contain;
             display: block;
         }
 
+        /* 🕹️ 🎮 改裝：經典掌機人體工學操作面板 */
         #html-control-pad {
             width: 100%;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            padding: 12px 5px;
-            background: #11161b;
-            border-top: 2px solid #1f272e;
-            margin-top: 5px;
+            grid-template-columns: 1fr 1fr 1.2fr; /* 左右移動各一格，右側功能鍵加大 */
+            gap: 12px;
+            padding: 12px 8px;
+            background: #161d24;
+            border-top: 2px solid #233541;
+            border-radius: 12px 12px 0 0;
+            flex-shrink: 0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
+        }
+        
+        /* 左側方向複合鍵（上/下） */
+        .dir-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         .ctrl-btn {
-            background: linear-gradient(145deg, #202b35, #141c22);
-            border: 2px solid #344756;
-            border-radius: 12px;
+            background: linear-gradient(145deg, #25333f, #19232c);
+            border: 2px solid #3d5466;
+            border-radius: 10px;
             color: #00ffcc;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            padding: 15px 0;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            cursor: pointer;
-        }
-        .ctrl-btn:active {
-            background: linear-gradient(145deg, #0d1318, #1a252e);
-            border-color: #00ffcc;
-            color: #fff;
-        }
-        .ctrl-btn-cycle {
-            background: linear-gradient(145deg, #d35400, #ba4a00);
-            border-color: #e67e22;
-            color: #fff;
-            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            cursor: pointer;
+            min-height: 52px;
+            transition: all 0.05s ease;
         }
-        .ctrl-btn-cycle:active { background: #a04000; }
+        .ctrl-btn:active {
+            background: linear-gradient(145deg, #121a20, #1c2730);
+            border-color: #00ffcc;
+            transform: scale(0.96);
+        }
+        
+        /* 大拇指最愛：超大核心功能切換鍵 */
+        .ctrl-btn-cycle {
+            background: linear-gradient(145deg, #e67e22, #d35400);
+            border-color: #f39c12;
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+            flex-direction: column;
+            gap: 4px;
+            height: 100%; /* 自動填滿網格高度 */
+        }
+        .ctrl-btn-cycle span {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        .ctrl-btn-cycle:active {
+            background: #ba4a00;
+            border-color: #e67e22;
+        }
 
         /* 📑 臨床醫學提示視窗 UI */
         #medicalModal {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 92%;
             background: #11161b;
             border: 2px solid #4da6ff;
             border-radius: 14px;
-            padding: 20px;
+            padding: 16px;
             z-index: 100;
             box-shadow: 0 0 30px rgba(0,0,0,0.95);
             display: none;
             text-align: center;
         }
-        .modal-title { color: #ffad33; font-size: 18px; margin-bottom: 15px; font-weight: bold; }
+        .modal-title { color: #ffad33; font-size: 16px; margin-bottom: 12px; font-weight: bold; }
         
         .preview-box {
             display: grid;
@@ -134,8 +169,8 @@
             background: #06090b;
             border: 1px solid #233541;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-bottom: 12px;
         }
         .preview-item {
             display: flex;
@@ -146,15 +181,14 @@
         .preview-item span {
             font-size: 11px;
             color: #88a0b5;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         .preview-canvas {
             background: #0b0f12;
             border: 1px solid #1f272e;
             border-radius: 6px;
         }
-
-        .modal-body { font-size: 13px; line-height: 1.6; color: #e1e7ed; text-align: left; margin-bottom: 18px; }
+        .modal-body { font-size: 12px; line-height: 1.5; color: #e1e7ed; text-align: left; margin-bottom: 14px; }
         .modal-btn {
             background: #4da6ff; color: #111; border: none; padding: 12px 28px;
             font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;
@@ -173,7 +207,7 @@
             z-index: 99;
             display: none;
         }
-        #result-text { font-size: 28px; font-weight: bold; margin-bottom: 20px; }
+        #result-text { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -191,7 +225,6 @@
 
         <div id="medicalModal">
             <div class="modal-title">🔬 發現新致病菌！</div>
-            
             <div class="preview-box">
                 <div class="preview-item">
                     <canvas id="bugPreview" class="preview-canvas" width="80" height="80"></canvas>
@@ -202,7 +235,6 @@
                     <span>對應特效抗生素</span>
                 </div>
             </div>
-
             <div class="modal-body" id="modalBody"></div>
             <button class="modal-btn" id="closeModalBtn">確認病徵並開藥</button>
         </div>
@@ -217,14 +249,30 @@
         </div>
 
         <div id="html-control-pad">
-            <div class="ctrl-btn" id="btn-left">◀</div>
-            <div class="ctrl-btn" id="btn-right">▶</div>
-            <div class="ctrl-btn" id="btn-down">▼</div>
-            <div class="ctrl-btn ctrl-btn-cycle" id="btn-cycle">💊 CYCLE</div>
+            <div class="dir-group">
+                <div class="ctrl-btn" id="btn-left">◀ 左移</div>
+            </div>
+            <div class="dir-group">
+                <div class="ctrl-btn" id="btn-right">▶ 右移</div>
+                <div class="ctrl-btn" id="btn-down" style="color: #ffad33;">▼ 加速</div>
+            </div>
+            <div class="ctrl-btn ctrl-btn-cycle" id="btn-cycle">
+                物料切換
+                <span>💊 CYCLE</span>
+            </div>
         </div>
     </div>
 
 <script>
+// 📱 解決行動版瀏覽器網址列變動造成的高度地獄
+function resetVH() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', resetVH);
+window.addEventListener('orientationchange', resetVH);
+resetVH();
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -233,7 +281,6 @@ const ROWS = 12;
 const BLOCK_SIZE = 40; 
 const BACTERIA_MIN_ROW = 8;
 
-// 📖 臨床圖鑑資料庫（全面校正為官方標準醫令縮寫）
 const CLINICAL_DIAGNOSIS = {
     1: { name: "金黃色葡萄球菌 (S. aureus)", features: "多個圓形聚集、金黃色葡萄串狀", antibiotic: "萬古黴素 (Vancomycin)", abbr: "VA", details: "對抗超級細菌首選，中央標示縮寫 VA 的雙色膠囊。" },
     2: { name: "肺炎雙球菌 (S. pneumoniae)", features: "成對出現的紅色圓形、外部有莢膜包裹", antibiotic: "阿莫西林 (Amoxicillin)", abbr: "AMX", details: "常用廣效性青黴素，中央標示縮寫 AMX 的白黃雙色膠囊。" },
@@ -266,7 +313,7 @@ class BiologicalBlock {
     constructor(type, isBacteria = false) {
         this.type = type; 
         this.isBacteria = isBacteria;
-        this.resistanceLevel = 0; // 0: 無、1: 黃框、2: 紅框
+        this.resistanceLevel = 0; 
         this.requiredHits = 1;     
     }
 }
@@ -306,7 +353,6 @@ function spawnSingleBacteria() {
     }
 }
 
-// 🎨 提示視窗內縮寫與圖像完美渲染
 function renderModalPreviews(type) {
     const bugCanvas = document.getElementById('bugPreview');
     const pCtx = bugCanvas.getContext('2d');
@@ -330,15 +376,15 @@ function renderModalPreviews(type) {
         
         mCtx.fillStyle = (info.leftColor === "#f1f2f6" || info.rightColor === "#ffffff") ? "#111" : "#fff";
         mCtx.font = "bold 13px sans-serif"; mCtx.textAlign = "center"; mCtx.textBaseline = "middle";
-        mCtx.fillText(diag.abbr, 40, 40); // 膠囊只在正中間印一次
+        mCtx.fillText(diag.abbr, 40, 40);
     } else {
         mCtx.fillStyle = '#f1c40f'; mCtx.beginPath(); mCtx.arc(40, 40, 22, 0, Math.PI * 2); mCtx.fill();
         mCtx.strokeStyle = '#b7950b'; mCtx.lineWidth = 2;
-        mCtx.beginPath(); mCtx.moveTo(40, 18); mCtx.lineTo(40, 62); mCtx.stroke(); // 刻痕
+        mCtx.beginPath(); mCtx.moveTo(40, 18); mCtx.lineTo(40, 62); mCtx.stroke(); 
         
         mCtx.fillStyle = '#7d6608'; mCtx.font = "bold 11px sans-serif"; mCtx.textBaseline = "middle";
-        mCtx.textAlign = "right"; mCtx.fillText(diag.abbr.slice(0, 1), 37, 41); // 左側: C
-        mCtx.textAlign = "left";  mCtx.fillText(diag.abbr.slice(1), 43, 41);    // 右側: LR
+        mCtx.textAlign = "right"; mCtx.fillText(diag.abbr.slice(0, 1), 37, 41); 
+        mCtx.textAlign = "left";  mCtx.fillText(diag.abbr.slice(1), 43, 41);    
     }
     mCtx.restore();
 }
@@ -424,7 +470,6 @@ function drawBacteria(block, x, y) {
     ctx.restore();
 }
 
-// 降落中的完整雙格藥丸：縮寫標註在合體正中央
 function drawDroppingPill(type, gridX, gridY) {
     let diag = CLINICAL_DIAGNOSIS[type];
     let info = MEDICINE_INFO[type];
@@ -440,12 +485,12 @@ function drawDroppingPill(type, gridX, gridY) {
         
         ctx.fillStyle = (info.leftColor === "#f1f2f6" || info.rightColor === "#ffffff") ? "#111" : "#fff";
         ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(diag.abbr, startX + 40, startY + 20); // 落在兩格的中線上
+        ctx.fillText(diag.abbr, startX + 40, startY + 20); 
     } else {
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath(); ctx.arc(startX + 40, startY + 20, 16, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#b7950b'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(startX + 40, startY + 4); ctx.lineTo(startX + 40, startY + 36); ctx.stroke(); // 刻痕
+        ctx.beginPath(); ctx.moveTo(startX + 40, startY + 4); ctx.lineTo(startX + 40, startY + 36); ctx.stroke(); 
         
         ctx.fillStyle = '#7d6608'; ctx.font = "bold 10px sans-serif"; ctx.textBaseline = "middle";
         ctx.textAlign = "right"; ctx.fillText(diag.abbr.slice(0, 1), startX + 38, startY + 20);
@@ -478,21 +523,17 @@ function draw() {
     }
 }
 
-// 💥 臨床精準碰撞判定（核心逆轉機制：對的藥可讓抗藥性降一級）
 function processSingleGridImpact(pX, pY, medicineType) {
     if (pY >= ROWS) return { hit: false, consumed: false };
     let target = grid[pY][pX];
     
     if (target && target.isBacteria) {
         if (medicineType === target.type) {
-            // ✅ 使用正確抗生素
             if (target.resistanceLevel > 0) {
-                // 🧬 降級核心邏輯：使用正確抗生素一個單位，會讓抗藥性退回一級！
                 target.resistanceLevel--;
-                if (target.resistanceLevel === 1) target.requiredHits = 2; // 退回黃框
-                if (target.resistanceLevel === 0) target.requiredHits = 1; // 退回無框
+                if (target.resistanceLevel === 1) target.requiredHits = 2; 
+                if (target.resistanceLevel === 0) target.requiredHits = 1; 
             } else {
-                // 原本無抗藥性，直接扣血直到消滅
                 target.requiredHits--;
                 if (target.requiredHits <= 0) {
                     grid[pY][pX] = null; 
@@ -501,7 +542,6 @@ function processSingleGridImpact(pX, pY, medicineType) {
                 }
             }
         } else {
-            // 🚫 投錯藥：抗藥性突變惡化一級
             if (target.resistanceLevel === 0) {
                 target.resistanceLevel = 1; target.requiredHits = 2; 
             } else if (target.resistanceLevel === 1) {
@@ -601,15 +641,17 @@ function moveRight() {
     if (currentPill.x + 1 < COLS - 1 && !grid[currentPill.y][currentPill.x + 2]) { currentPill.x++; draw(); }
 }
 
-document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); });
-document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); });
-document.getElementById('btn-down').addEventListener('touchstart', (e) => { e.preventDefault(); moveDown(); draw(); });
-document.getElementById('btn-cycle').addEventListener('touchstart', (e) => { e.preventDefault(); cyclePillType(); });
+// 使用防止穿透的觸控監聽處理行動端操作
+const bindBtn = (id, action) => {
+    const el = document.getElementById(id);
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); action(); });
+    el.addEventListener('click', (e) => { action(); });
+};
 
-document.getElementById('btn-left').addEventListener('click', moveLeft);
-document.getElementById('btn-right').addEventListener('click', moveRight);
-document.getElementById('btn-down').addEventListener('click', () => { moveDown(); draw(); });
-document.getElementById('btn-cycle').addEventListener('click', cyclePillType);
+bindBtn('btn-left', moveLeft);
+bindBtn('btn-right', moveRight);
+bindBtn('btn-down', () => { moveDown(); draw(); });
+bindBtn('btn-cycle', cyclePillType);
 
 window.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') moveLeft(); if (e.key === 'ArrowRight') moveRight();
