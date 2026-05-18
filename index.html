@@ -46,26 +46,24 @@
         }
 
         #html-control-pad {
-            width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr 1.1fr; gap: 6px;
-            padding: 10px 6px; background: #161d24; border-top: 2px solid #233541;
+            width: 100%; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px;
+            padding: 12px 8px; background: #161d24; border-top: 2px solid #233541;
             border-radius: 12px 12px 0 0; flex-shrink: 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
         }
-        .dir-group { display: flex; flex-direction: column; gap: 6px; }
+        .dir-group { display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn {
             background: linear-gradient(145deg, #25333f, #19232c); border: 2px solid #3d5466;
-            border-radius: 10px; color: #00ffcc; font-size: 16px; font-weight: bold;
+            border-radius: 10px; color: #00ffcc; font-size: 20px; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; min-height: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; min-height: 52px;
             transition: all 0.05s ease;
         }
         .ctrl-btn:active { background: linear-gradient(145deg, #121a20, #1c2730); border-color: #00ffcc; transform: scale(0.96); }
-        
-        .ctrl-btn-action { background: linear-gradient(145deg, #3498db, #2980b9); border-color: #5dade2; color: #fff; font-size: 13px; flex-direction: column; gap: 2px; }
-        .ctrl-btn-action span { font-size: 9px; opacity: 0.8; }
-        .ctrl-btn-action:active { background: #1f618d; border-color: #3498db; }
-
-        .ctrl-btn-cycle { background: linear-gradient(145deg, #e67e22, #d35400); border-color: #f39c12; color: #fff; font-size: 13px; flex-direction: column; gap: 2px; }
-        .ctrl-btn-cycle span { font-size: 9px; opacity: 0.8; }
+        .ctrl-btn-cycle {
+            background: linear-gradient(145deg, #e67e22, #d35400); border-color: #f39c12;
+            color: #fff; font-size: 14px; letter-spacing: 1px; flex-direction: column; gap: 4px; height: 100%;
+        }
+        .ctrl-btn-cycle span { font-size: 10px; opacity: 0.8; }
         .ctrl-btn-cycle:active { background: #ba4a00; border-color: #e67e22; }
 
         #medicalModal {
@@ -73,9 +71,24 @@
             background: #11161b; border: 2px solid #4da6ff; border-radius: 14px; padding: 16px;
             z-index: 100; box-shadow: 0 0 30px rgba(0,0,0,0.95); display: none; text-align: center;
         }
+        .modal-title { color: #ffad33; font-size: 16px; margin-bottom: 12px; font-weight: bold; }
+        .preview-box {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            background: #06090b; border: 1px solid #233541; border-radius: 8px; padding: 10px; margin-bottom: 12px;
+        }
+        .preview-item { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .preview-item span { font-size: 11px; color: #88a0b5; margin-top: 4px; }
+        .preview-canvas { background: #0b0f12; border: 1px solid #1f272e; border-radius: 6px; }
         .modal-body { font-size: 12px; line-height: 1.5; color: #e1e7ed; text-align: left; margin-bottom: 14px; }
-        .modal-btn { background: #4da6ff; color: #111; border: none; padding: 12px 28px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; width: 100%; }
-        #resultScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 18, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99; display: none; }
+        .modal-btn {
+            background: #4da6ff; color: #111; border: none; padding: 12px 28px;
+            font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; width: 100%;
+        }
+        #resultScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 18, 0.95); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 99; display: none;
+        }
         #result-text { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
@@ -83,7 +96,7 @@
 
     <header>
         <h1>Dr. Pharmacology - 臨床解毒試驗</h1>
-        <div class="warn-text">🚀 縱向劑型具「雙倍灌注」效果，敏感抗生素可連降兩級！</div>
+        <div class="warn-text">⚠️ 沒碰藥集體增生！紫色超級細菌碰錯藥將原地分裂！</div>
     </header>
 
     <div id="main-layout">
@@ -93,14 +106,23 @@
         </div>
 
         <div id="medicalModal">
-            <div style="color: #ffad33; font-size: 16px; margin-bottom: 12px; font-weight: bold;">🔬 發現新致病菌！</div>
+            <div class="modal-title">🔬 發現新致病菌！</div>
+            <div class="preview-box">
+                <div class="preview-item">
+                    <canvas id="bugPreview" class="preview-canvas" width="80" height="80"></canvas>
+                    <span>顯微病原體圖案</span>
+                </div>
+                <div class="preview-item">
+                    <canvas id="pillPreview" class="preview-canvas" width="80" height="80"></canvas>
+                    <span>對應特效抗生素</span>
+                </div>
+            </div>
             <div class="modal-body" id="modalBody"></div>
             <button class="modal-btn" id="closeModalBtn">確認病徵並開藥</button>
         </div>
 
         <div id="status-bar">
             <div>消滅菌數: <span id="score" style="color:#00ffcc;font-weight:bold;">0</span></div>
-            <div>形態: <span id="current-dir-text" style="color:#4da6ff;font-weight:bold;">橫向 (H)</span></div>
             <div>當前藥物: <span id="current-pill-text" style="color:#ffad33;font-weight:bold;">VA</span></div>
         </div>
 
@@ -114,8 +136,7 @@
                 <div class="ctrl-btn" id="btn-right">▶ 右移</div>
                 <div class="ctrl-btn" id="btn-down" style="color: #ffad33;">▼ 加速</div>
             </div>
-            <div class="ctrl-btn ctrl-btn-action" id="btn-rotate">方向旋轉<span>🔄 ROTATE</span></div>
-            <div class="ctrl-btn ctrl-btn-cycle" id="btn-cycle">物料切換<span>💊 CYCLE</span></div>
+            <div class="ctrl-btn ctrl-btn-cycle" id="btn-cycle">成分切換<span>💊 CYCLE</span></div>
         </div>
     </div>
 
@@ -129,11 +150,11 @@ const BLOCK_SIZE = 40;
 const BACTERIA_MIN_ROW = 8;
 
 const CLINICAL_DIAGNOSIS = {
-    1: { name: "金黃色葡萄球菌 (S. aureus)", antibiotic: "萬古黴素 (Vancomycin)", abbr: "VA" },
-    2: { name: "肺炎雙球菌 (S. pneumoniae)", antibiotic: "阿莫西林 (Amoxicillin)", abbr: "AMX" },
-    3: { name: "大腸桿菌 (E. coli)", antibiotic: "頭孢曲松 (Ceftriaxone)", abbr: "CRO" },
-    4: { name: "綠膿桿菌 (P. aeruginosa)", antibiotic: "環丙沙星 (Ciprofloxacin)", abbr: "CIP" },
-    5: { name: "幽門螺桿菌 (H. pylori)", antibiotic: "克拉黴素 (Clarithromycin)", abbr: "CLR" }
+    1: { name: "金黃色葡萄球菌 (S. aureus)", features: "多個圓形聚集、金黃色葡萄串狀", antibiotic: "萬古黴素 (Vancomycin)", abbr: "VA", details: "雙色膠囊。" },
+    2: { name: "肺炎雙球菌 (S. pneumoniae)", features: "成對出現的紅色圓形、外部有莢膜包裹", antibiotic: "阿莫西林 (Amoxicillin)", abbr: "AMX", details: "白黃雙色膠囊。" },
+    3: { name: "大腸桿菌 (E. coli)", features: "紫色的長條圓角桿菌", antibiotic: "頭孢曲松 (Ceftriaxone)", abbr: "CRO", details: "橘紫雙色膠囊。" },
+    4: { name: "綠膿桿菌 (P. aeruginosa)", features: "綠色桿菌，尾端帶有多條波浪狀鞭毛", antibiotic: "環丙沙星 (Ciprofloxacin)", abbr: "CIP", details: "藍白雙色膠囊。" },
+    5: { name: "幽門螺桿菌 (H. pylori)", features: "藍色螺旋波浪狀軀體、尾端具叢生鞭毛", antibiotic: "克拉黴素 (Clarithromycin)", abbr: "CLR", details: "黃色圓形錠劑。" }
 };
 
 const MEDICINE_INFO = {
@@ -156,8 +177,7 @@ let poolOfBacteria = [1, 2, 3, 4, 5];
 poolOfBacteria.sort(() => Math.random() - 0.5); 
 let discoveredBacteria = {}; 
 
-// 🚀 currentPill 新增亦追蹤 vertical 形態
-let currentPill = { x: 3, pixelY: 0, type: 1, speed: 0.8, isSettled: false, freezeFrames: 0, vertical: false };
+let currentPill = { x: 3, pixelY: 0, type: 1, speed: 0.8, isSettled: false, freezeFrames: 0 };
 let visualEffects = []; 
 
 class BiologicalBlock {
@@ -175,7 +195,8 @@ class Particle {
         this.x = x; this.y = y; this.color = color;
         this.vx = (Math.random() - 0.5) * 8;
         this.vy = (Math.random() - 0.5) * 8 - 1;
-        this.alpha = 1.0; this.size = Math.random() * 4 + 2;
+        this.alpha = 1.0;
+        this.size = Math.random() * 4 + 2;
     }
     update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.03; }
     draw() {
@@ -197,18 +218,11 @@ function randomizePillType() {
     currentPill.speed = 0.8;
     currentPill.isSettled = false;
     currentPill.freezeFrames = 0;
-    // 隨機重置時保持原本方向，但確保不越界
-    if (currentPill.vertical) {
-        if (currentPill.x > COLS - 1) currentPill.x = COLS - 1;
-    } else {
-        if (currentPill.x > COLS - 2) currentPill.x = COLS - 2;
-    }
     updatePillDisplay();
 }
 
 function updatePillDisplay() {
     document.getElementById('current-pill-text').innerText = CLINICAL_DIAGNOSIS[currentPill.type].abbr;
-    document.getElementById('current-dir-text').innerText = currentPill.vertical ? "縱向 (V)" : "橫向 (H)";
 }
 
 function spawnSingleBacteria() {
@@ -237,27 +251,32 @@ function triggerMedicalModal(type) {
     let info = CLINICAL_DIAGNOSIS[type];
     document.getElementById('modalBody').innerHTML = `
         <b style="color:#00ffcc;">病原體名稱：</b>${info.name}<br>
-        <b style="color:#ffad33;">首選敏感抗生素：</b>${info.antibiotic} (${info.abbr})
+        <b style="color:#00ffcc;">首選敏感抗生素：</b>${info.antibiotic} (${info.abbr})
     `;
     document.getElementById('medicalModal').style.display = 'block';
 }
 
 document.getElementById('closeModalBtn').addEventListener('click', () => {
-    document.getElementById('medicalModal').style.display = 'none'; isPaused = false;
+    document.getElementById('medicalModal').style.display = 'none';
+    isPaused = false;
 });
 
 function drawBacteriaGraphic(targetCtx, block) {
     switch(block.type) {
         case 1:
-            [[12,12],[24,10],[18,22],[10,26],[26,24],[18,10],[21,18],[28,14]].forEach(p => {
+            [[12,12],[24,10],[18,22],[10,26],[26,24],[18,10],[21,18],[28,14],[10,18]].forEach(p => {
                 targetCtx.fillStyle = '#f39c12'; targetCtx.beginPath(); targetCtx.arc(p[0], p[1], 6, 0, Math.PI*2); targetCtx.fill();
             }); break;
         case 2:
             targetCtx.fillStyle = 'rgba(231, 76, 60, 0.25)'; targetCtx.beginPath(); targetCtx.roundRect(4, 10, 32, 20, 10); targetCtx.fill();
             [[14,20], [26,20]].forEach(cp => { targetCtx.fillStyle = '#e74c3c'; targetCtx.beginPath(); targetCtx.arc(cp[0], cp[1], 7, 0, Math.PI*2); targetCtx.fill(); });
             break;
-        case 3: targetCtx.fillStyle = '#8e44ad'; targetCtx.beginPath(); targetCtx.roundRect(4, 13, 32, 14, 7); targetCtx.fill(); break;
-        case 4: targetCtx.fillStyle = '#27ae60'; targetCtx.beginPath(); targetCtx.roundRect(13, 4, 14, 24, 7); targetCtx.fill(); break;
+        case 3:
+            targetCtx.fillStyle = '#8e44ad'; targetCtx.beginPath(); targetCtx.roundRect(4, 13, 32, 14, 7); targetCtx.fill();
+            break;
+        case 4:
+            targetCtx.fillStyle = '#27ae60'; targetCtx.beginPath(); targetCtx.roundRect(13, 4, 14, 24, 7); targetCtx.fill();
+            break;
         case 5:
             targetCtx.strokeStyle = '#2980b9'; targetCtx.lineWidth = 3.5; targetCtx.beginPath();
             targetCtx.moveTo(4, 15); targetCtx.bezierCurveTo(10, 6, 14, 26, 20, 16); targetCtx.bezierCurveTo(24, 8, 28, 24, 34, 15); targetCtx.stroke();
@@ -266,110 +285,96 @@ function drawBacteriaGraphic(targetCtx, block) {
 }
 
 function drawBacteria(block, x, y) {
-    ctx.save(); if (block.scale < 1.0) block.scale += 0.05; 
-    ctx.translate(x + BLOCK_SIZE/2, y + BLOCK_SIZE/2); ctx.scale(block.scale, block.scale); ctx.translate(-BLOCK_SIZE/2, -BLOCK_SIZE/2);
+    ctx.save();
+    if (block.scale < 1.0) block.scale += 0.05; 
+
+    ctx.translate(x + BLOCK_SIZE/2, y + BLOCK_SIZE/2);
+    ctx.scale(block.scale, block.scale);
+    ctx.translate(-BLOCK_SIZE/2, -BLOCK_SIZE/2);
 
     if (block.resistanceLevel > 0) {
-        ctx.strokeStyle = RESISTANCE_COLORS[block.resistanceLevel]; ctx.lineWidth = 4; 
+        ctx.strokeStyle = RESISTANCE_COLORS[block.resistanceLevel];
+        ctx.lineWidth = 4; 
         ctx.beginPath(); ctx.arc(20, 20, 17, 0, Math.PI * 2); ctx.stroke();
+
         if (block.pulseRadius > 0) {
-            ctx.save(); ctx.globalAlpha = 1.0 - (block.pulseRadius / 16); ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(20, 20, 17 + block.pulseRadius, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-            block.pulseRadius += 1.0; if (block.pulseRadius >= 16) block.pulseRadius = 0;
+            ctx.save();
+            ctx.globalAlpha = 1.0 - (block.pulseRadius / 16);
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(20, 20, 17 + block.pulseRadius, 0, Math.PI * 2); ctx.stroke();
+            ctx.restore();
+            block.pulseRadius += 1.0;
+            if (block.pulseRadius >= 16) block.pulseRadius = 0;
         }
     }
-    drawBacteriaGraphic(ctx, block); ctx.restore();
+
+    drawBacteriaGraphic(ctx, block);
+    ctx.restore();
 }
 
-function drawDroppingPill(type, gridX, pixelY, isVertical) {
-    let diag = CLINICAL_DIAGNOSIS[type]; let info = MEDICINE_INFO[type];
+function drawDroppingPill(type, gridX, pixelY) {
+    let diag = CLINICAL_DIAGDiagnosis = CLINICAL_DIAGNOSIS[type]; let info = MEDICINE_INFO[type];
     let startX = gridX * BLOCK_SIZE;
     ctx.save();
-
-    if (!isVertical) {
-        // 橫向渲染（佔用兩格寬）
-        if (info.isCapsule) {
-            ctx.fillStyle = info.leftColor; ctx.beginPath(); ctx.roundRect(startX + 4, pixelY + 8, 36, 24, [12, 0, 0, 12]); ctx.fill();
-            ctx.fillStyle = info.rightColor; ctx.beginPath(); ctx.roundRect(startX + 40, pixelY + 8, 36, 24, [0, 12, 12, 0]); ctx.fill();
-            ctx.fillStyle = (info.leftColor === "#f1f2f6" || info.rightColor === "#ffffff") ? "#111" : "#fff";
-            ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(diag.abbr, startX + 40, pixelY + 20); 
-        } else {
-            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(startX + 20, pixelY + 20, 15, 0, Math.PI * 2); ctx.arc(startX + 60, pixelY + 20, 15, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#7d6608'; ctx.font = "bold 11px sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillText(diag.abbr, startX + 40, pixelY + 20);
-        }
+    if (info.isCapsule) {
+        ctx.fillStyle = info.leftColor; ctx.beginPath(); ctx.roundRect(startX + 4, pixelY + 8, 36, 24, [12, 0, 0, 12]); ctx.fill();
+        ctx.fillStyle = info.rightColor; ctx.beginPath(); ctx.roundRect(startX + 40, pixelY + 8, 36, 24, [0, 12, 12, 0]); ctx.fill();
+        ctx.fillStyle = (info.leftColor === "#f1f2f6" || info.rightColor === "#ffffff") ? "#111" : "#fff";
+        ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(diag.abbr, startX + 40, pixelY + 20); 
     } else {
-        // 縱向渲染（佔用兩格高：下方球體 + 上方球體）
-        if (info.isCapsule) {
-            ctx.fillStyle = info.rightColor; ctx.beginPath(); ctx.roundRect(startX + 8, pixelY + 4, 24, 36, [0, 0, 12, 12]); ctx.fill(); // 下半截胶囊
-            ctx.fillStyle = info.leftColor; ctx.beginPath(); ctx.roundRect(startX + 8, pixelY - 32, 24, 36, [12, 12, 0, 0]); ctx.fill(); // 上半截胶囊
-            ctx.fillStyle = (info.leftColor === "#f1f2f6" || info.rightColor === "#ffffff") ? "#111" : "#fff";
-            ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(diag.abbr, startX + 20, pixelY + 4);
-        } else {
-            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(startX + 20, pixelY + 20, 15, 0, Math.PI * 2); ctx.arc(startX + 20, pixelY - 20, 15, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#7d6608'; ctx.font = "bold 11px sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillText(diag.abbr, startX + 20, pixelY);
-        }
+        ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(startX + 40, pixelY + 20, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#7d6608'; ctx.font = "bold 10px sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillText(diag.abbr, startX + 40, pixelY + 20);
     }
     ctx.restore();
 }
 
-// 🎯 單次劑量核心碰撞算法
-function executeSingleDoseImpact(r, c, type) {
-    let t = grid[r][c];
-    if (!t || !t.isBacteria) return false;
-
-    let medInfo = MEDICINE_INFO[type];
-    createExplosion(c * BLOCK_SIZE + BLOCK_SIZE/2, r * BLOCK_SIZE + BLOCK_SIZE/2, medInfo.leftColor, medInfo.rightColor, 20);
-
-    if (type === t.type) {
-        // 🟢 投對敏感抗生素：降一級或消滅
-        if (t.resistanceLevel > 0) {
-            t.resistanceLevel--; t.pulseRadius = 1; t.scale = 0.7;
-        } else {
-            grid[r][c] = null; killedCount++; document.getElementById('score').innerText = killedCount;
-        }
-    } else {
-        // 🚫 投錯非敏感抗生素：升一級或觸發原地分裂
-        if (t.resistanceLevel < 3) {
-            t.resistanceLevel++; t.pulseRadius = 1; t.scale = 0.6;
-        } else if (t.resistanceLevel === 3) {
-            triggerSingleBacterialSplit(r, c, t);
-        }
-    }
-    return true;
-}
-
-// 🎯 精確碰撞控制中樞（分流橫向與縱向劑量）
-function checkImpact(gridX, targetGridY, isVertical) {
+function checkImpact(gridX, targetGridY) {
     if (targetGridY >= ROWS) return false;
+    
+    let x1 = gridX; let x2 = gridX + 1;
+    let target1 = grid[targetGridY][x1];
+    let target2 = grid[targetGridY][x2];
+    
+    if (!target1 && !target2) return false;
 
-    if (!isVertical) {
-        // 🔹 橫向模式：同時檢查左右兩格
-        let t1 = grid[targetGridY][gridX];
-        let t2 = grid[targetGridY][gridX + 1];
-        if (!t1 && !t2) return false;
+    currentPill.isSettled = true;
+    currentPill.freezeFrames = 15; 
+    
+    let medInfo = MEDICINE_INFO[currentPill.type];
+    let pX = gridX * BLOCK_SIZE + BLOCK_SIZE;
+    let pY = targetGridY * BLOCK_SIZE;
 
-        currentPill.isSettled = true; currentPill.freezeFrames = 15;
-        executeSingleDoseImpact(targetGridY, gridX, currentPill.type);
-        executeSingleDoseImpact(targetGridY, gridX + 1, currentPill.type);
-        return true;
-    } else {
-        // 🔸 縱向模式：下端接觸到細菌，注入「雙倍劑量」（連續執行兩次同一網格的撞擊）
-        let t = grid[targetGridY][gridX];
-        if (!t) return false;
+    createExplosion(pX, pY + 15, medInfo.leftColor, medInfo.rightColor, 25);
 
-        currentPill.isSettled = true; currentPill.freezeFrames = 18; // 給予更長的定格時間展現兩段炸裂
-        
-        // 第一劑量灌注
-        executeSingleDoseImpact(targetGridY, gridX, currentPill.type);
-        
-        // 延遲毫秒級別的視覺追加（在下一高幀追加第二劑量，如果細菌還在就繼續作用）
-        setTimeout(() => {
-            if (grid[targetGridY] && grid[targetGridY][gridX]) {
-                executeSingleDoseImpact(targetGridY, gridX, currentPill.type);
+    let targets = [target1, target2];
+    let cells = [{r: targetGridY, c: x1}, {r: targetGridY, c: x2}];
+
+    targets.forEach((t, idx) => {
+        if (!t || !t.isBacteria) return;
+        let pos = cells[idx];
+
+        if (currentPill.type === t.type) {
+            if (t.resistanceLevel > 0) {
+                t.resistanceLevel--; 
+                t.pulseRadius = 1; 
+                t.scale = 0.7;
+            } else {
+                grid[pos.r][pos.c] = null; 
+                killedCount++;
+                document.getElementById('score').innerText = killedCount;
             }
-        }, 60);
-        return true;
-    }
+        } else {
+            if (t.resistanceLevel < 3) {
+                t.resistanceLevel++; 
+                t.pulseRadius = 1;
+                t.scale = 0.6;
+            } else if (t.resistanceLevel === 3) {
+                triggerSingleBacterialSplit(pos.r, pos.c, t);
+            }
+        }
+    });
+
+    return true;
 }
 
 function triggerSingleBacterialSplit(r, c, b) {
@@ -378,8 +383,10 @@ function triggerSingleBacterialSplit(r, c, b) {
         let nr = r + dr; let nc = c + dc;
         if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !grid[nr][nc]) {
             grid[nr][nc] = new BiologicalBlock(b.type, true);
-            grid[nr][nc].resistanceLevel = 3; grid[nr][nc].scale = 0.05;
-            if (nr === 0) endGame(false); break;
+            grid[nr][nc].resistanceLevel = 3; 
+            grid[nr][nc].scale = 0.05; 
+            if (nr === 0) endGame(false);
+            break;
         }
     }
 }
@@ -387,7 +394,9 @@ function triggerSingleBacterialSplit(r, c, b) {
 function triggerGlobalBacterialDoubling() {
     let currentBacteria = [];
     for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) { if (grid[r][c] && grid[r][c].isBacteria) currentBacteria.push({ r: r, c: c, block: grid[r][c] }); }
+        for (let c = 0; c < COLS; c++) {
+            if (grid[r][c] && grid[r][c].isBacteria) currentBacteria.push({ r: r, c: c, block: grid[r][c] });
+        }
     }
     currentBacteria.forEach(b => {
         let directions = [[0,1],[0,-1],[1,0],[-1,0]];
@@ -395,17 +404,19 @@ function triggerGlobalBacterialDoubling() {
             let nr = b.r + dr; let nc = b.c + dc;
             if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !grid[nr][nc]) {
                 grid[nr][nc] = new BiologicalBlock(b.block.type, true);
-                grid[nr][nc].resistanceLevel = b.block.resistanceLevel; grid[nr][nc].scale = 0.05; 
-                if (nr === 0) endGame(false); break;
+                grid[nr][nc].resistanceLevel = b.block.resistanceLevel;
+                grid[nr][nc].scale = 0.05; 
+                if (nr === 0) endGame(false);
+                break;
             }
         }
     });
 }
 
 function gameLoop() {
-    if (gameOver) return; ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (gameOver) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 網格底層
     ctx.strokeStyle = '#12191f'; ctx.lineWidth = 1;
     for(let i=0; i<=COLS; i++) { ctx.beginPath(); ctx.moveTo(i*BLOCK_SIZE, 0); ctx.lineTo(i*BLOCK_SIZE, canvas.height); ctx.stroke(); }
     for(let i=0; i<=ROWS; i++) { ctx.beginPath(); ctx.moveTo(0, i*BLOCK_SIZE); ctx.lineTo(canvas.width, i*BLOCK_SIZE); ctx.stroke(); }
@@ -415,54 +426,39 @@ function gameLoop() {
         let nextGridY = Math.floor((currentPill.pixelY + BLOCK_SIZE - 5) / BLOCK_SIZE);
 
         if (nextGridY >= ROWS) {
-            // 🔵 空降到底部沒碰到細菌 -> 著陸粉碎並集體分裂
             currentPill.isSettled = true; currentPill.freezeFrames = 12;
             let info = MEDICINE_INFO[currentPill.type];
             createExplosion(currentPill.x * BLOCK_SIZE + BLOCK_SIZE, canvas.height - 10, info.leftColor, info.rightColor, 15);
-            triggerGlobalBacterialDoubling();
+            triggerGlobalBacterialDoubling(); 
         } else {
-            checkImpact(currentPill.x, nextGridY, currentPill.vertical);
+            checkImpact(currentPill.x, nextGridY);
         }
     }
 
     if (currentPill.isSettled) {
         currentPill.freezeFrames--;
-        if (currentPill.freezeFrames <= 0) { randomizePillType(); spawnSingleBacteria(); }
+        if (currentPill.freezeFrames <= 0) {
+            randomizePillType();
+            spawnSingleBacteria();
+        }
     }
 
     for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) { if (grid[r][c] && grid[r][c].isBacteria) drawBacteria(grid[r][c], c * BLOCK_SIZE, r * BLOCK_SIZE); }
+        for (let c = 0; c < COLS; c++) {
+            if (grid[r][c] && grid[r][c].isBacteria) drawBacteria(grid[r][c], c * BLOCK_SIZE, r * BLOCK_SIZE);
+        }
     }
 
     if (!isPaused && !currentPill.isSettled) {
-        drawDroppingPill(currentPill.type, currentPill.x, currentPill.pixelY, currentPill.vertical);
+        drawDroppingPill(currentPill.type, currentPill.x, currentPill.pixelY);
     }
 
     for (let i = visualEffects.length - 1; i >= 0; i--) {
-        visualEffects[i].update(); visualEffects[i].draw(); if (visualEffects[i].alpha <= 0) visualEffects.splice(i, 1);
+        visualEffects[i].update(); visualEffects[i].draw();
+        if (visualEffects[i].alpha <= 0) visualEffects.splice(i, 1);
     }
+
     animFrameId = requestAnimationFrame(gameLoop);
-}
-
-function toggleRotation() {
-    if (isPaused || gameOver || currentPill.isSettled) return;
-    if (!currentPill.vertical) {
-        // 橫向轉縱向
-        currentPill.vertical = true;
-    } else {
-        // 縱向轉橫向（需檢查右側邊界防越界）
-        currentPill.vertical = false;
-        if (currentPill.x >= COLS - 1) currentPill.x = COLS - 2;
-    }
-    updatePillDisplay();
-}
-
-function cyclePillType() { if (isPaused || gameOver || currentPill.isSettled) return; currentPill.type = currentPill.type % 5 + 1; updatePillDisplay(); }
-function moveLeft() { if (isPaused || gameOver || currentPill.isSettled) return; if (currentPill.x > 0) currentPill.x--; }
-function moveRight() {
-    if (isPaused || gameOver || currentPill.isSettled) return;
-    let maxCol = currentPill.vertical ? COLS - 1 : COLS - 2;
-    if (currentPill.x < maxCol) currentPill.x++;
 }
 
 function endGame(isSuccess) {
@@ -473,20 +469,29 @@ function endGame(isSuccess) {
     screen.style.display = "flex";
 }
 
+function cyclePillType() { if (isPaused || gameOver || currentPill.isSettled) return; currentPill.type = currentPill.type % 5 + 1; updatePillDisplay(); }
+function moveLeft() { if (isPaused || gameOver || currentPill.isSettled) return; if (currentPill.x > 0) currentPill.x--; }
+function moveRight() { if (isPaused || gameOver || currentPill.isSettled) return; if (currentPill.x + 1 < COLS - 1) currentPill.x++; }
+
+function resetVH() { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); }
+window.addEventListener('resize', resetVH); resetVH();
+
 const bindBtn = (id, action) => {
     const el = document.getElementById(id);
     el.addEventListener('touchstart', (e) => { e.preventDefault(); action(); });
     el.addEventListener('click', (e) => { action(); });
 };
 bindBtn('btn-left', moveLeft); bindBtn('btn-right', moveRight);
-bindBtn('btn-rotate', toggleRotation); bindBtn('btn-cycle', cyclePillType);
 bindBtn('btn-down', () => { if(!currentPill.isSettled) currentPill.speed = 8.0; });
+bindBtn('btn-cycle', cyclePillType);
 
 window.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') moveLeft(); if (e.key === 'ArrowRight') moveRight();
-    if (e.key === 'ArrowUp') toggleRotation(); if (e.key === ' ') cyclePillType();
-    if (e.key === 'ArrowDown' && !currentPill.isSettled) currentPill.speed = 8.0;
+    if (e.key === 'ArrowDown' && !currentPill.isSettled) currentPill.speed = 8.0; if (e.key === 'ArrowUp' || e.key === ' ') cyclePillType();
 });
 
-function resetVH() { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); }
-window.addEventListener('resize', resetVH); resetVH();
+spawnSingleBacteria(); randomizePillType();
+gameLoop(); 
+</script>
+</body>
+</html>
